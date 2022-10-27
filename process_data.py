@@ -70,13 +70,11 @@ for t in range(3600, 4201):
     Bx = B[:,:,0]
     By = B[:,:,1]
     Bz = B[:,:,2]
-    abs_B = np.sqrt(Bx**2 + By**2 + Bz**2)
 
     E = norm3.masking(bulk_path + file_name, boxre, 'E')
     Ex = E[:,:,0]
     Ey = E[:,:,1]
     Ez = E[:,:,2]
-    abs_E = np.sqrt(Ex**2 + Ey**2 + Ez**2)
 
     rho = norm3.masking(bulk_path + file_name, boxre, 'rho')
     rho_v = norm3.masking(bulk_path + file_name, boxre, 'rho_v')
@@ -86,7 +84,6 @@ for t in range(3600, 4201):
     vx = v[:,:,0]
     vy = v[:,:,1]
     vz = v[:,:,2]
-    abs_v = np.sqrt(vx**2 + vy**2 + vz**2)
 
     # Selecting X-points within the domain
     labeling_x = []
@@ -110,7 +107,7 @@ for t in range(3600, 4201):
     data = {
         'Bx': Bx, 'By': By, 'Bz': Bz, 'rho': rho, 'Ex': Ex, 'Ey': Ey, 'Ez': Ez, 'vx': vx, 'vy': vy, 'vz': vz,
         'agyrotropy':agyrotropy, 'anisotropy': anisotropy, 'labeled_domain': labeled_domain,
-        'abs_E': abs_E, 'abs_B': abs_B, 'abs_v': abs_v, 'xmin': xmin,'xmax': xmax, 'zmin': zmin, 'zmax': zmax
+        'xmin': xmin,'xmax': xmax, 'zmin': zmin, 'zmax': zmax
     }
 
     np.savez(f'{args.outdir}/{t}.npz', **data)
