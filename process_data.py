@@ -17,8 +17,7 @@ try:
 except FileExistsError:
     pass
 
-Re = 6700000 # Earth's radius in m's / constant declaration
-
+Re = 6371000 # Earth's radius
 
 # Choose spatial domain
 if args.dayside:
@@ -35,47 +34,43 @@ else:
 boxre = [xmin, xmax, zmin, zmax]
 
 
-for t in range(3700, 4200):
+for t in range(4008, 4100):
+    # Loading x points for ground truth
+    x_loc_dir = '/proj/ivanzait/x_points_calc/'
+    x_loc_file = 'x_point_location_'+str(t)+'.txt'
 
-######### LOADING Xpoints for ground truth
-    x_loc_dir='/proj/ivanzait/x_points_calc/'
-    x_loc_file='x_point_location_'+str(t)+'.txt'
+    with open(x_loc_dir + x_loc_file) as f:
+        lines = f.readlines()
 
-    Re=6371000
-
-    with open(x_loc_dir+x_loc_file) as f:
-        lines=f.readlines()
-
-    x_xp_array=[]
-    z_xp_array=[]
+    x_xp_array = []
+    z_xp_array = []
 
     for k in range(len(lines)):       
-        lineK=lines[k]    
-        splitted=lineK.split(" ")
-        x_xp=np.divide(float(splitted[0]),Re)
-        z_xp=np.divide(float(splitted[2]),Re)
+        lineK = lines[k]    
+        splitted = lineK.split(' ')
+        x_xp = np.divide(float(splitted[0]), Re)
+        z_xp = np.divide(float(splitted[2]), Re)
         x_xp_array.append(x_xp) # x position of Xpoint
         z_xp_array.append(z_xp) # z position of Xpoint
 
 
-    ### Selecting X-points within the domain
-    labeling_x=[]
-    labeling_z=[]
+    # Selecting x points within the domain
+    labeling_x = []
+    labeling_z = []
     for kkk in range(0,np.array(x_xp_array).shape[0]):
         if x_xp_array[kkk] > xmin and x_xp_array[kkk] < xmax and z_xp_array[kkk] > zmin and z_xp_array[kkk] < zmax :
             labeling_x.append(x_xp_array[kkk])
             labeling_z.append(z_xp_array[kkk])
     
          
-######### READING the simulation data
-    
+    # Reading the simulation data
     base_path = '/wrk/group/spacephysics/vlasiator/2D/BCH/'
     bulk_path = f'{base_path}/bulk/'
     file_name = f'bulk.000{str(t)}.vlsv'
     file = pt.vlsvfile.VlsvReader(bulk_path + file_name)
     
     
-    #### Normalization
+    # Normalization
     anisotropy, agyrotropy = norm3.normalization(
         filename=bulk_path + file_name, boxre=boxre,
         pass_vars=['anisotropy', 'agyrotropy']
@@ -104,14 +99,14 @@ for t in range(3700, 4200):
     xx = np.linspace(xmin, xmax, (np.array(B).shape[1]))
     zz = np.linspace(zmin, zmax, (np.array(B).shape[0]))
 
-######## Labeling
+    # Labeling
     labeled_domain = np.zeros_like(B[:,:,0]) # Create zero matrix with size equal to spatial domain size
     for k in range(0,np.array(labeling_x).shape[0]): # Cycle over X-points
         idx_x = (np.abs(xx - np.array(labeling_x)[k])).argmin() # Column index of X-point pixel  
         idx_z = (np.abs(zz - np.array(labeling_z)[k])).argmin() # Row index of X-point pixel 
         labeled_domain[idx_z,idx_x] = 1 # Chabge 0 to 1 for the pixels with X-point
     
-######## Storing   
+    # Storing   
     data = {
         'Bx': Bx, 'By': By, 'Bz': Bz, 'rho': rho, 'Ex': Ex, 'Ey': Ey, 'Ez': Ez, 'vx': vx, 'vy': vy, 'vz': vz,
         'agyrotropy':agyrotropy, 'anisotropy': anisotropy, 'labeled_domain': labeled_domain,
