@@ -34,7 +34,7 @@ else:
 boxre = [xmin, xmax, zmin, zmax]
 
 
-for t in range(4008, 4100):
+for t in range(3600, 4200):
     # Loading x points for ground truth
     x_loc_dir = '/proj/ivanzait/x_points_calc/'
     x_loc_file = 'x_point_location_'+str(t)+'.txt'
