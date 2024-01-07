@@ -22,9 +22,9 @@ Re = 6371000 # Earth's radius
 # Choose spatial domain
 if args.dayside:
     xmin = -20
-    xmax = 9
-    zmin = -8
-    zmax = 8
+    xmax = 10
+    zmin = -10
+    zmax = 10
 else:
     xmin = -30
     xmax = -5
@@ -33,10 +33,17 @@ else:
 
 boxre = [xmin, xmax, zmin, zmax]
 
+frames_per_file = 6
+frame_count = 0
+
+data_containers = {
+    'Bx': [], 'By': [], 'Bz': [], 'rho': [], 'Ex': [], 'Ey': [], 'Ez': [], 
+    'vx': [], 'vy': [], 'vz': [], 'agyrotropy': [], 'anisotropy': [], 'reconnection': []
+}
 
 for t in range(3600, 4200):
     # Loading x points for ground truth
-    x_loc_dir = '/proj/ivanzait/x_points_calc/'
+    x_loc_dir = 'x_points_calc/'
     x_loc_file = 'x_point_location_'+str(t)+'.txt'
 
     with open(x_loc_dir + x_loc_file) as f:
@@ -109,10 +116,21 @@ for t in range(3600, 4200):
     # Storing   
     data = {
         'Bx': Bx, 'By': By, 'Bz': Bz, 'rho': rho, 'Ex': Ex, 'Ey': Ey, 'Ez': Ez, 'vx': vx, 'vy': vy, 'vz': vz,
-        'agyrotropy':agyrotropy, 'anisotropy': anisotropy, 'labeled_domain': labeled_domain,
-        'xmin': xmin,'xmax': xmax, 'zmin': zmin, 'zmax': zmax
+        'agyrotropy':agyrotropy, 'anisotropy': anisotropy, 'reconnection': labeled_domain,
     }
-
-    np.savez(f'{args.outdir}/{t}.npz', **data)
     
-    print(file_name, 'exported')
+    print(file_name)
+    
+    for key in data:
+        data_containers[key].append(data[key])
+
+    frame_count += 1
+
+    if frame_count == frames_per_file:
+        concatenated_data = {key: np.stack(data_containers[key], axis=-1) for key in data_containers}
+        np.save(f'{args.outdir}/frames_{t - frame_count + 1}_to_{t}.npy', concatenated_data)
+        
+        print(f'Frames {t - frame_count + 1} to {t} exported')
+
+        frame_count = 0
+        data_containers = {key: [] for key in data_containers}

@@ -8,7 +8,6 @@ from scipy.signal import convolve2d
 from shapely import geometry
 from numpy import linalg as LA
 import time
-from testfiles import indices as test_indices
 
 ## This script searches for the x and o points from the 2D simulations. It assumes polar plane. If you use equatorial plane change the z_array to y_array and it's limits.
 ## It uses the contours of grad(flux_function) to find the extrema and Hessian matrix to define the type of the point (minima, maxima, saddle)
@@ -33,19 +32,18 @@ flux_suffix = ".bin"
 ## We need one bulk file as well:
 bulk_path = "/wrk/group/spacephysics/vlasiator/2D/"+run_id+"/bulk/bulk."
 bulk_suffix = ".vlsv"
-bulkfile = bulk_path + str(1958).zfill(7) + bulk_suffix
-
-## GIVE PATH WHERE YOU WANT TO SAVE THE POINTS ##
-#path_to_save='/wrk/group/spacephysics/vlasiator/2D/'+run_id+'/visualization/x_and_o_points/'
-path_to_save='/proj/hdaniel/2d-reconnection-data/x_points_benchmark/'
 
 calc_times = []
 
+bulkfile = bulk_path + str(3600).zfill(7) + bulk_suffix
+
+#path_to_save='/wrk/group/spacephysics/vlasiator/2D/'+run_id+'/visualization/x_and_o_points/'
+path_to_save='/proj/hdaniel/2d-reconnection-data/x_points_calc'
+
 RE=6371000
 
-# FUNCTION FOR FINDING THE INTERSECTION POINTS OF TWO CONTOURS
+# Find intersection of two contours
 def findIntersection(v1,v2):
-  # modified from https://stackoverflow.com/questions/42838190/finding-intersection-of-two-contour-plots-in-python
   #p1 = contour1.collections[0].get_paths()[0]
   #v1 = p1.vertices
 
@@ -74,21 +72,21 @@ def findIntersection(v1,v2):
 
 ## Open bulkfile, determine sizes ##
 vlsvfile = pt.vlsvfile.VlsvReader(bulkfile);
-x_cells=int(vlsvfile.get_spatial_mesh_size()[0])
-z_cells=int(vlsvfile.get_spatial_mesh_size()[2])
+x_cells = int(vlsvfile.get_spatial_mesh_size()[0])
+z_cells = int(vlsvfile.get_spatial_mesh_size()[2])
 xsize = vlsvfile.read_parameter("xcells_ini")
-xmax =  vlsvfile.read_parameter("xmax")
-xmin =  vlsvfile.read_parameter("xmin")
-zmin =  vlsvfile.read_parameter("zmin")
-zmax =  vlsvfile.read_parameter("zmax")
+xmax = vlsvfile.read_parameter("xmax")
+xmin = vlsvfile.read_parameter("xmin")
+zmin = vlsvfile.read_parameter("zmin")
+zmax = vlsvfile.read_parameter("zmax")
 dx = (xmax-xmin)/xsize
 
 ## DEFINE ARRAYS FOR AXIS
-x_array=np.array(range(int(xmin), int(xmax), int(dx)))
-z_array=np.array(range(int(zmin), int(zmax), int(dx)))
+x_array = np.array(range(int(xmin), int(xmax), int(dx)))
+z_array = np.array(range(int(zmin), int(zmax), int(dx)))
 
 
-for index in test_indices[:3]:  
+for index in range(3600, 4200):  
     fluxfile = flux_path + str(index).zfill(7) + flux_suffix
 
     # Open input fluxfile
@@ -96,9 +94,9 @@ for index in test_indices[:3]:
     flux_offset = float(index)*0.3535*5e-9*(-7.5e5)
 
     start_time = time.time()
-    
+
     # Smooth fluxfunction
-    kernel_size=5
+    kernel_size = 5
     fkernel = np.ones((kernel_size,kernel_size))/(kernel_size**2)
     raw_flux_function = flux_function
     flux_function= convolve2d(flux_function, fkernel, 'same')
@@ -108,13 +106,13 @@ for index in test_indices[:3]:
 
     #calculate the 0 contours of df/dx and df/dz
     pl.figure(1)
-    contour1=plt.contour(x_array,z_array, dfdx, [0])
-    contour1_paths=contour1.collections[0].get_paths()
-    contour2=plt.contour(x_array,z_array, dfdz, [0])
-    contour2_paths=contour2.collections[0].get_paths()
+    contour1 = plt.contour(x_array,z_array, dfdx, [0])
+    contour1_paths = contour1.collections[0].get_paths()
+    contour2 = plt.contour(x_array,z_array, dfdz, [0])
+    contour2_paths = contour2.collections[0].get_paths()
 
-    x_coords=[]
-    z_coords=[]
+    x_coords = []
+    z_coords = []
 
     # find the intersection points of the 
     for path1 in contour1_paths:
@@ -123,7 +121,7 @@ for index in test_indices[:3]:
                 intersection=findIntersection(path1.vertices,path2.vertices)
                 intersection_points=np.asarray(intersection)
                 if len(intersection_points)>0:
-                    if len(intersection_points.shape)==1:
+                    if len(intersection_points.shape) == 1:
                         x_coords.append(intersection_points[0])
                         z_coords.append(intersection_points[1])
                     else:
@@ -134,19 +132,19 @@ for index in test_indices[:3]:
 
     # DEFINE the type of the gradient(flux)=0 ##
 
-    x_point_location=[]
-    o_point_location=[]
-    x_point_fluxes=[]
-    o_point_fluxes=[]
-    minima_location=[]
-    flux_function=flux_function.T
+    x_point_location = []
+    o_point_location = []
+    x_point_fluxes = []
+    o_point_fluxes = []
+    minima_location = []
+    flux_function = flux_function.T
 
     for k in range(len(x_coords)):
       #cellid = 1+i+j*x_cells
-        coords=[x_coords[k],0,z_coords[k]]
-        cellid=vlsvfile.get_cellid(coords)
-        i=int((cellid-1)%x_cells)
-        j=(int(cellid)-1)//x_cells
+        coords = [x_coords[k],0,z_coords[k]]
+        cellid = vlsvfile.get_cellid(coords)
+        i = int((cellid-1)%x_cells)
+        j = (int(cellid)-1)//x_cells
 
         difference=[]
 
@@ -182,18 +180,18 @@ for index in test_indices[:3]:
             if DetHess > 0 and deltaPsi_xx < 0:
                 o_point_location.append(coords)
                 o_point_fluxes.append(interpolated_flux)
-    
+
     pl.close('all')
-    
+
     end_time = time.time()
-    
+
     calc_times.append(end_time - start_time)
 
     np.savetxt(path_to_save+"/o_point_location_"+str(index)+".txt", o_point_location)
     np.savetxt(path_to_save+"/o_point_location_and_fluxes_"+str(index)+".txt", np.concatenate( (o_point_location,np.array(o_point_fluxes)[:,np.newaxis]), axis=1))
     np.savetxt(path_to_save+"/x_point_location_"+str(index)+".txt", x_point_location)
     np.savetxt(path_to_save+"/x_point_location_and_fluxes_"+str(index)+".txt", np.concatenate( (x_point_location,np.array(x_point_fluxes)[:,np.newaxis]), axis=1))
-    
+
 print(calc_times)
-print('Mean inference time:', np.mean(calc_times), 'seconds') 
-print('Stdev inference time:', np.std(calc_times), 'seconds')
+print('Mean calc time:', np.mean(calc_times), 'seconds') 
+print('Stdev calc time:', np.std(calc_times), 'seconds')
