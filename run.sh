@@ -10,4 +10,4 @@
 module load SciPy-bundle
 export PYTHONPATH=$PYTHONPATH:$HOME/analysator
 
-python flux_function.py
+python flux_function.py -o x_points
