@@ -4,12 +4,10 @@
 
 ## Requirements
 
-Installing analysator on Jupyter Hub
-
-https://github.com/fmihpc/analysator/wiki/Jupyter-notebook-on-Vorna
-
-Runs on Python 3.6
-
 ```
-pip install -r requirements.txt
+cd $HOME
+git clone https://github.com/fmihpc/analysator.git
+pip install numpy scipy matplotlib Shapely
 ```
+
+export PATH="$HOME/.local/bin:$PATH"

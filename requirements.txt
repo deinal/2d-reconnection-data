@@ -1,4 +1,0 @@
-matplotlib==3.2.1
-numpy==1.19.5
-scipy==1.5.4
-Shapely==1.8.5
