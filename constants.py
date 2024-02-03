@@ -3,20 +3,12 @@ runs = [
     {
         "id": "BCH",
         "t_min": 1800,
-        "t_max": 4300,
+        "t_max": 4299,
     }, {
         "id": "BCQ",
-        "t_min": 1200,
-        "t_max": 2875,
-    }, {
-        "id": "BFB",
-        "t_min": 1200,
-        "t_max": 1958,
-    }, {
-        "id": "BFD",
-        "t_min": 1300,
-        "t_max": 2262,
-    },
+        "t_min": 875,
+        "t_max": 2874,
+    }
 ]
 
 Re = 6371000  # Earth's radius

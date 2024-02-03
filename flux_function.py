@@ -120,6 +120,9 @@ for run in runs:
             i = int((cellid - 1) % x_cells)
             j = (int(cellid) - 1) // x_cells
 
+            if i-1 < 0 or i+1 > x_cells - 1 or j-1 < 0 or j+1 > z_cells - 1:
+                continue
+
             difference = []
 
             # Hessian matrix using central difference formulas for the second partial derivatives

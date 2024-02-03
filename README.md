@@ -30,7 +30,7 @@ python extract_data.py -o frames
 
 Step 3.
 
-Combine states into datacubes suitables for forecasting
+Combine states into series suitables for forecasting
 ```
-python prepare_states.py
+python prepare_states.py -o series
 ```

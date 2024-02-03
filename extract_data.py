@@ -52,7 +52,7 @@ for run in runs:
                 labeling_z.append(z_xp_array[kkk])
 
         # read simulation data
-        file_name = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/bulk/bulk.000{t}.vlsv'
+        file_name = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/bulk/bulk.{str(t).zfill(7)}.vlsv'
         file = pt.vlsvfile.VlsvReader(file_name)
 
         B = features.masking(file_name, boxre, 'B')
@@ -104,7 +104,7 @@ for run in runs:
         frame_data = np.stack([B_mag, Bx, By, Bz, E_mag, Ex, Ey, Ez, v_mag, vx, vy, vz,
                                rho, rhom, rhoq, pressure, temperature, beta, pdyn,
                                agyrotropy, anisotropy, reconnection], axis=-1)
-        
+
         np.save(f'{args.outdir}/{run_id}_{t}.npy', resize(frame_data))
 
         print(f'Extracted frame {run_id}_{t}')
