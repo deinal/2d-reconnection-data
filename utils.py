@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.ndimage import zoom
+from constants import height, width
 
 
 def wrap(arr):
@@ -33,7 +34,7 @@ def wrap(arr):
 
     return new_arr
 
-def resize(frame_data, new_height=428, new_width=642):
+def resize(frame_data, new_height=height, new_width=width):
     current_height, current_width, num_features = frame_data.shape
     
     # Calculate the scaling factors for height and width

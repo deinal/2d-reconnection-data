@@ -17,3 +17,6 @@ xmin = -20
 xmax = 10
 zmin = -10
 zmax = 10
+
+height = 428
+width = 642
