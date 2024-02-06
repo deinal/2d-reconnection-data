@@ -16,7 +16,6 @@ def create_datasets(data_dir, out_dir, step_size, num_steps):
         t_min = run['t_min']
         t_max = run['t_max']
 
-        # Ensure output directories exist
         os.makedirs(os.path.join(out_dir, 'test'), exist_ok=True)
         os.makedirs(os.path.join(out_dir, 'val'), exist_ok=True)
         os.makedirs(os.path.join(out_dir, 'train'), exist_ok=True)
@@ -27,7 +26,7 @@ def create_datasets(data_dir, out_dir, step_size, num_steps):
         
         all_steps = [extract_number(f) for f in files]
             
-        # Test Set
+        # test set
         test_start_step = t_max - 32*step_size+step_size # aim at 30 step forecast with 2 init states
         test_steps = list(range(test_start_step, t_max+step_size, step_size))
         test_files = [files[step-t_min] for step in test_steps]
@@ -35,20 +34,20 @@ def create_datasets(data_dir, out_dir, step_size, num_steps):
         test_data = np.stack([np.load(os.path.join(data_dir, f)) for f in test_files], axis=0)
         np.save(os.path.join(out_dir, 'test', f'{run_id}_{test_start_step}.npy'), test_data)
 
-        # Validation Set
+        # validation set
         val_steps = []
         for test_step in test_steps:
-            # test step +/- 15 steps belong to validation
-            surrounding_indices = [test_step + offset for offset in range(-15, 16) if offset != 0]
+            # +/- 6 steps surrounding test belong to validation
+            surrounding_indices = [test_step + offset for offset in range(-6, 7) if offset != 0]
             val_steps.extend(surrounding_indices)
-        for step in val_steps[::3]:
+        for step in val_steps[::3]: # store every 3rd step
             start = step - t_min
             val_files = files[start : start + step_size*num_steps : step_size]
             if len(val_files) == num_steps:
                 val_data = np.stack([np.load(os.path.join(data_dir, f)) for f in val_files], axis=0)
                 np.save(os.path.join(out_dir, 'val', f'{run_id}_{str(step).zfill(4)}.npy'), val_data)
 
-        # Training Set
+        # training set
         train_steps = set(all_steps) - set(test_steps) - set(val_steps)
         for step in sorted(list(train_steps))[::3]:
             start = step - t_min
