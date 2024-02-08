@@ -73,14 +73,11 @@ for run in runs:
         vy = v[:, :, 1]
         vz = v[:, :, 2]
 
-        rhom = features.masking(file_name, boxre, 'rhom')
-        rhoq = features.masking(file_name, boxre, 'rhoq')
         rho = features.masking(file_name, boxre, 'rho')
+        earth_mask = rho == 0
         
         pressure = features.masking(file_name, boxre, 'pressure')
         temperature = features.masking(file_name, boxre, 'temperature')
-        beta = features.masking(file_name, boxre, 'beta')
-        pdyn = features.masking(file_name, boxre, 'pdyn')
 
         # calculate pressure agyrotropy and anisotropy
         agyrotropy, anisotropy = features.normalization(
@@ -102,8 +99,8 @@ for run in runs:
 
         # concatenate processed features
         frame_data = np.stack([B_mag, Bx, By, Bz, E_mag, Ex, Ey, Ez, v_mag, vx, vy, vz,
-                               rho, rhom, rhoq, pressure, temperature, beta, pdyn,
-                               agyrotropy, anisotropy, reconnection], axis=-1)
+                               rho, pressure, temperature, agyrotropy, anisotropy, reconnection], axis=-1)
+        frame_data[earth_mask] = 0
 
         np.save(f'{args.outdir}/{run_id}_{t}.npy', resize(frame_data))
 

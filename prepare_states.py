@@ -27,7 +27,7 @@ def create_datasets(data_dir, out_dir, step_size, num_steps):
         all_steps = [extract_number(f) for f in files]
             
         # test set
-        test_start_step = t_max - 32*step_size+step_size # aim at 30 step forecast with 2 init states
+        test_start_step = t_max - 22*step_size+step_size # aim at 20 step forecast with 2 init states
         test_steps = list(range(test_start_step, t_max+step_size, step_size))
         test_files = [files[step-t_min] for step in test_steps]
         print(test_files, len(test_files))
@@ -40,7 +40,7 @@ def create_datasets(data_dir, out_dir, step_size, num_steps):
             # +/- 6 steps surrounding test belong to validation
             surrounding_indices = [test_step + offset for offset in range(-6, 7) if offset != 0]
             val_steps.extend(surrounding_indices)
-        for step in val_steps[::3]: # store every 3rd step
+        for step in val_steps[::1]: # store every step
             start = step - t_min
             val_files = files[start : start + step_size*num_steps : step_size]
             if len(val_files) == num_steps:
@@ -49,7 +49,7 @@ def create_datasets(data_dir, out_dir, step_size, num_steps):
 
         # training set
         train_steps = set(all_steps) - set(test_steps) - set(val_steps)
-        for step in sorted(list(train_steps))[::3]:
+        for step in sorted(list(train_steps))[::1]:
             start = step - t_min
             train_files = files[start : start + step_size*num_steps : step_size]
             if len(train_files) == num_steps:

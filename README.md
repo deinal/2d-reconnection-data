@@ -4,13 +4,17 @@
 
 ## Requirements
 
+Have analysator installed on path
 ```
 cd $HOME
 git clone https://github.com/fmihpc/analysator.git
-pip install numpy scipy matplotlib Shapely
+export PYTHONPATH=$PYTHONPATH:$HOME/analysator
 ```
 
-export PATH="$HOME/.local/bin:$PATH"
+Python 3.6.8
+```
+pip install -r requirements.txt
+```
 
 ## Run
 
