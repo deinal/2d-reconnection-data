@@ -4,9 +4,10 @@ runs = [
         "id": "BCH",
         "t_min": 1800,
         "t_max": 4300,
-    }, {
+    }, 
+    {
         "id": "BCQ",
-        "t_min": 875,
+        "t_min": 1075,
         "t_max": 2875,
     }
 ]
@@ -19,4 +20,4 @@ zmin = -10
 zmax = 10
 
 height = 428
-width = 642
+width = 642 
