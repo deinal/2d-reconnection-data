@@ -3,9 +3,9 @@ from scipy.ndimage import zoom
 from constants import height, width
 
 
-def wrap(arr):
-    # Define a 3x3 patch of 0.5 with middle 1
-    patch = 0.5 * np.ones((3, 3))
+def wrap(arr, pad=1):
+    # Define a 3x3 patch of pad values with middle 1
+    patch = pad * np.ones((3, 3))
     patch[1, 1] = 1
 
     h, w = arr.shape
