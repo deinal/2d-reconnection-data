@@ -19,7 +19,7 @@ def generate_sequences(steps, num_steps, step_size, exclude_steps):
             sequences.append(sequence)
     return sequences
 
-def create_datasets(data_dir, out_dir, step_size, num_steps):
+def create_datasets(data_dir, out_dir, step_size, num_steps, num_test_sequences=1):
     for run in runs:
         run_id = run['id']
         t_min = run['t_min']
@@ -35,17 +35,22 @@ def create_datasets(data_dir, out_dir, step_size, num_steps):
         
         all_steps = [extract_number(f) for f in files]
 
-        # Define the test set
-        test_start_step = t_max - 32*step_size+step_size # max 30 step forecast with 2 init states
-        test_steps = list(range(test_start_step, t_max+step_size, step_size))
-        test_files = [files[step-t_min] for step in test_steps]
-        print(test_files, len(test_files))
-        test_data = np.stack([np.load(os.path.join(data_dir, f)) for f in test_files], axis=0)
-        np.save(os.path.join(out_dir, 'test', f'{run_id}_{test_start_step}.npy'), test_data)
+        test_steps_all = []
+        mid_point = (t_max + t_min) // 2
+        max_possible_start = t_max - 32 * step_size + step_size
+        test_start_options = list(range(mid_point, max_possible_start + 1, step_size))
+        for _ in range(num_test_sequences):
+            test_start_step = random.choice(test_start_options)
+            test_start_options.remove(test_start_step)  # Ensure unique test sequences
+            test_steps = list(range(test_start_step, test_start_step + 32 * step_size, step_size))
+            test_steps_all.extend(test_steps)
+            test_files = [files[step - t_min] for step in test_steps]
+            test_data = np.stack([np.load(os.path.join(data_dir, f)) for f in test_files], axis=0)
+            np.save(os.path.join(out_dir, 'test', f'{run_id}_{test_start_step}.npy'), test_data) 
 
         # Generate sequences excluding test steps
-        valid_train_val_steps = sorted(set(all_steps) - set(test_steps))
-        sequences = generate_sequences(valid_train_val_steps, num_steps, step_size, test_steps)
+        valid_train_val_steps = sorted(set(all_steps) - set(test_steps_all))
+        sequences = generate_sequences(valid_train_val_steps, num_steps, step_size, test_steps_all)
 
         # Split sequences into train and test
         random.shuffle(sequences)
@@ -64,12 +69,13 @@ def create_datasets(data_dir, out_dir, step_size, num_steps):
             data = np.stack([np.load(os.path.join(data_dir, f"{run_id}_{step}.npy")) for step in seq], axis=0)
             np.save(os.path.join(out_dir, 'val', f'{run_id}_{seq[0]}.npy'), data)
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--out_dir', type=str)
     parser.add_argument('-d', '--data_dir', type=str, default='frames')
     parser.add_argument('-s', '--step_size', type=int, default=10)
     parser.add_argument('-n', '--num_steps', type=int, default=5)
+    parser.add_argument('-t', '--num_test_sequences', type=int, default=10)
     args = parser.parse_args()
 
-    create_datasets(args.data_dir, args.out_dir, args.step_size, args.num_steps)
+    create_datasets(args.data_dir, args.out_dir, args.step_size, args.num_steps, args.num_test_sequences)
