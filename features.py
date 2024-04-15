@@ -2,6 +2,8 @@ import scipy
 import numpy as np
 import pytools as pt
 import reduction
+from utils import wrap, resize
+
 RE=6371000
 
 
