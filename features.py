@@ -3,9 +3,9 @@ import numpy as np
 import pytools as pt
 import reduction
 from utils import wrap, resize
+from scipy.interpolate import RegularGridInterpolator
 
 RE=6371000
-
 
 def get_var(file_name, boxre, var_name, grid_flag):
 
@@ -92,7 +92,6 @@ def label_reconnection(labeling_x,labeling_z,B,boxre):
     return reconnection
 
 
-
 def get_agyrotropy(file_name,boxre,name_list):
     
     [E_name,B_name,rho_name,V_name,Pd_name,Pod_name]=name_list
@@ -141,6 +140,40 @@ def get_anisotropy(file_name,boxre,name_list):
     anisotropy=anisotropy.reshape(sy,sx)    
     return anisotropy
     
+
+def get_pressure(file_name,boxre,name_list):
+    [E_name,B_name,rho_name,V_name,Pd_name,Pod_name]=name_list        
+    Pdiag = get_var(file_name, boxre, var_name=Pd_name, grid_flag='vg')       
+    pressure_isotropic= (Pdiag[:,:,0]+Pdiag[:,:,1]+Pdiag[:,:,2])/3
+    return pressure_isotropic
+
+def get_temperature(file_name,boxre,name_list):
+    [E_name,B_name,rho_name,V_name,Pd_name,Pod_name]=name_list
+    pressure=get_pressure(file_name,boxre,name_list)    
+    rho = get_var(file_name, boxre, rho_name,grid_flag='vg')
+    temperature = pressure/rho
+    return temperature
+
+
+
+
+def intp_data(boxre,height,width,nx,ny,data2d):
+    
+    x = np.linspace(boxre[0],boxre[1],nx) ## original size 
+    y = np.linspace(boxre[2],boxre[3],ny) ## original size 
+    #xx,yy = np.meshgrid(x,y)
+
+    xi = np.linspace(boxre[0],boxre[1],width) ## desired size
+    yi = np.linspace(boxre[2],boxre[3],height) ## desired size
+    xxi,yyi = np.meshgrid(xi,yi)
+    points = np.column_stack((xxi.ravel(), yyi.ravel()))
+
+    # Create interpolator
+    interp_func = RegularGridInterpolator((x, y), data2d)
+    intp_data = interp_func(points)
+    intp_data2d=intp_data.reshape(height,width)
+
+    return intp_data2d
 
 
 

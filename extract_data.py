@@ -8,15 +8,16 @@ import numpy as np
 import features
 import reduction
 from utils import wrap, resize
-from constants import Re, xmin, xmax, zmin, zmax, runs
+from constants import Re, xmin, xmax, zmin, zmax, runs, height, width
 import argparse
+
 
 
 ######## MAIN C#########
 
 ## DEFINE THE BOX
 
-xmin, xmax, zmin, zmax=[-20,10,-10,10]
+# xmin, xmax, zmin, zmax=[-20,10,-10,10]
 boxre = [xmin, xmax, zmin, zmax]
 
 #t=300
@@ -51,7 +52,7 @@ for run in runs:
         V_name='rho_v'
         Pd_name ='PTensorDiagonal'
         Pod_name = 'PTensorOffDiagonal'     
-        
+
     if run_id=='BGF':
         bulk_path='/wrk-vakka/group/spacephysics/vlasiator/2D/BGF/extendvspace_restart229/bulk/'
         x_dir='/wrk-vakka/group/spacephysics/vlasiator/2D/BGF/ivan/x_and_o_points/'        
@@ -63,6 +64,20 @@ for run in runs:
         Pd_name ='proton/vg_ptensor_diagonal'
         Pod_name = 'proton/vg_ptensor_offdiagonal'     
 
+
+    if run_id=='BCQ':
+        bulk_path='/wrk-vakka/group/spacephysics/vlasiator/2D/BCQ/bulk/'
+        x_dir='/wrk-vakka/group/spacephysics/vlasiator/2D/BCQ/x_and_o_points/' 
+        ### naming:       
+        E_name='E'
+        B_name='B'         
+        rho_name='rho'
+        V_name='rho_v'
+        Pd_name ='PTensorDiagonal'
+        Pod_name = 'PTensorOffDiagonal'     
+    
+
+    
 
     name_list=[E_name,B_name,rho_name,V_name,Pd_name,Pod_name]
 
@@ -76,48 +91,49 @@ for run in runs:
         #print('x points are ready')
 
 #         # read simulation data
-#         #file_name = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/bulk/bulk.{str(t).zfill(7)}.vlsv'
+#       #file_name = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/bulk/bulk.{str(t).zfill(7)}.vlsv'
         file_name=bulk_path+'bulk.'+str(t).zfill(7)+'.vlsv'
         #file = pt.vlsvfile.VlsvReader(file_name)
-
-        #B = features.masking(file_name, boxre, B_name)
+        
         B = features.get_var(file_name, boxre, B_name,grid_flag='vg')        
         B_mag = np.linalg.norm(B, axis=-1)
-        Bx,By,Bz = B[:, :, 0],B[:, :, 1],B[:, :, 2]
-        print('B done')
-
-        #E = features.masking(file_name, boxre, E_name)
+        Bx,By,Bz = B[:, :, 0],B[:, :, 1],B[:, :, 2]        
+        
         if run_id=='BCH':
             E = features.get_var(file_name, boxre, E_name,grid_flag='vg')
         elif run_id=='BGF':
             E = features.get_var(file_name, boxre, E_name,grid_flag='fg')                
         E_mag = np.linalg.norm(E, axis=-1)
         Ex,Ey,Ez = B[:, :, 0], E[:, :, 1], E[:, :, 2]
-        print('E done')
-
-        #rho = features.masking(file_name, boxre, rho_name)
+        
         rho = features.get_var(file_name, boxre, rho_name,grid_flag='vg')
         earth_mask = rho == 0
-        print('rho done')
-
-        #v = features.masking(file_name, boxre, V_name)
+        
         v = features.get_var(file_name, boxre, V_name,grid_flag='vg')
         v_mag = np.linalg.norm(v, axis=-1)
         vx,vy,vz = v[:, :, 0],v[:, :, 1],v[:, :, 2]
-        print('v done')
-      
+
+        # calculate isotropic pressure and temperature
+        pressure = features.get_pressure(file_name=file_name, boxre=boxre,name_list=name_list)
+        temperature = features.get_temperature(file_name=file_name, boxre=boxre,name_list=name_list)
+
         # calculate pressure agyrotropy and anisotropy
         anisotropy = features.get_anisotropy(file_name=file_name, boxre=boxre,name_list=name_list)
         agyrotropy = features.get_agyrotropy(file_name=file_name, boxre=boxre,name_list=name_list)
         reconnection = features.label_reconnection(labeling_x,labeling_z,B,boxre)
 
+           
+        #### interpolation
+        var_list = [B_mag, Bx, By, Bz, E_mag, Ex, Ey, Ez, v_mag, vx, vy, vz,
+                               rho,pressure,temperature,agyrotropy,anisotropy,reconnection]
+
+        nx,ny=Bx.shape[0],Bx.shape[1]
+        for var in var_list:            
+            var=features.intp_data(boxre,height,width,nx,ny,data2d=var)
+            
+
         # concatenate processed features
-#        frame_data = np.stack([B_mag, Bx, By, Bz, E_mag, Ex, Ey, Ez, v_mag, vx, vy, vz,
-#                               rho, agyrotropy, anisotropy, reconnection], axis=-1)
-
-        frame_data = np.stack([B_mag, Bx, By, Bz, E_mag, Ex, Ey, Ez, v_mag, vx, vy, vz,
-                               rho,agyrotropy,anisotropy,reconnection], axis=-1)
-
+        frame_data = np.stack(var_list, axis=-1)
         frame_data[earth_mask] = 0
 
         np.save(f'{args.outdir}/{run_id}_{t}.npy', resize(frame_data))
