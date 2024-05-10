@@ -2,23 +2,23 @@
 runs = [
     {
         "id": "BGD",
-        "t_min": 800,
-        "t_max": 801,
+        "t_min": 550,
+        "t_max": 990,
     },
     {
         "id": "BCH",
         "t_min": 1800,
-        "t_max": 1801,
+        "t_max": 4300,
     }, 
     {
         "id": "BCQ",
-        "t_min": 1800,
-        "t_max": 1801,
+        "t_min": 1075,
+        "t_max": 2875,
     },
     {
         "id": "BGF",
-        "t_min": 300,
-        "t_max": 301,
+        "t_min": 230,
+        "t_max": 477,
     }
 
     ]
