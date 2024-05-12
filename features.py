@@ -1,16 +1,15 @@
-import scipy
 import numpy as np
 import pytools as pt
 import reduction
-from utils import wrap, resize
+from utils import wrap
+from constants import RE
 from scipy.interpolate import RegularGridInterpolator
 
-RE = 6371000
 
 def get_var(file_name, boxre, var_name, grid_flag):    
     
     f = pt.vlsvfile.VlasiatorReader(file_name)
-    size = np.float32(f.get_fsgrid_mesh_size())
+    size = np.float32(f.get_spatial_mesh_size())
     nx = int(size[0])
     nz = int(size[2])
 

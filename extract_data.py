@@ -1,26 +1,18 @@
 import os
-import sys
-module_dir = '/proj/ivanzait/analysator/'
-sys.path.append(module_dir)
-import pytools as pt
-
 import argparse
-from constants import Re, xmin, xmax, zmin, zmax, runs, height, width
-from utils import wrap, resize
-#import reduction
+from constants import xmin, xmax, zmin, zmax, runs, height, width
+from utils import resize
 import features
 import numpy as np
 
-######## MAIN C#########
-
-boxre = [xmin, xmax, zmin, zmax]
-
-############################################################
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument('-o', '--outdir', type=str)
-arg_parser.add_argument('-x', '--x_dir', default='x_points', type=str)
 args = arg_parser.parse_args()
+
+boxre = [xmin, xmax, zmin, zmax]
+
+base_path = '/wrk-vakka/group/spacephysics/vlasiator/2D'
 
 try:
     os.makedirs(args.outdir)
@@ -34,8 +26,8 @@ for run in runs:
     end_time = run['t_max']
 
     if run_id == 'BCH':
-        bulk_path = '/wrk-vakka/group/spacephysics/vlasiator/2D/BCH/bulk/'
-        x_dir = '/wrk-vakka/group/spacephysics/vlasiator/2D/BCH/x_and_o_points/'
+        bulk_path = f'{base_path}/{run_id}/bulk/'
+        x_dir = f'{base_path}/{run_id}/x_and_o_points/'
         # naming:
         E_name = 'E'
         B_name = 'B'
@@ -43,21 +35,21 @@ for run in runs:
         V_name = 'rho_v'
         Pd_name = 'PTensorDiagonal'
         Pod_name = 'PTensorOffDiagonal'
-
-    if run_id == 'BGF':
-        bulk_path = '/wrk-vakka/group/spacephysics/vlasiator/2D/BGF/extendvspace_restart229/bulk/'
-        x_dir = '/wrk-vakka/group/spacephysics/vlasiator/2D/BGF/ivan/x_and_o_points/'
+    
+    if run_id == 'BCQ':
+        bulk_path = f'{base_path}/{run_id}/bulk/'
+        x_dir = f'{base_path}/{run_id}/x_and_o_points/'
         # naming:
-        E_name = 'fg_e'
-        B_name = 'vg_b_vol'
-        rho_name = 'proton/vg_rho'
-        V_name = 'proton/vg_v'
-        Pd_name = 'proton/vg_ptensor_diagonal'
-        Pod_name = 'proton/vg_ptensor_offdiagonal'
+        E_name = 'E'
+        B_name = 'B'
+        rho_name = 'rho'
+        V_name = 'rho_v'
+        Pd_name = 'PTensorDiagonal'
+        Pod_name = 'PTensorOffDiagonal'
 
     if run_id == 'BGD':
-        bulk_path = '/wrk-vakka/group/spacephysics/vlasiator/2D/BGD/continuation/bulk/'
-        x_dir = '/wrk-vakka/group/spacephysics/vlasiator/2D/BGD/x_and_o_points/'
+        bulk_path = f'{base_path}/{run_id}/continuation/bulk/'
+        x_dir = f'{base_path}/{run_id}/x_and_o_points/'
         # naming:
         E_name = 'fg_e'
         B_name = 'vg_b_vol'
@@ -66,28 +58,25 @@ for run in runs:
         Pd_name = 'proton/vg_ptensor_diagonal'
         Pod_name = 'proton/vg_ptensor_offdiagonal'
 
-
-    if run_id == 'BCQ':
-        bulk_path = '/wrk-vakka/group/spacephysics/vlasiator/2D/BCQ/bulk/'
-        x_dir = '/wrk-vakka/group/spacephysics/vlasiator/2D/BCQ/x_and_o_points/'
+    if run_id == 'BGF':
+        bulk_path = f'{base_path}/{run_id}/extendvspace_restart229/bulk/'
+        x_dir = f'{base_path}/{run_id}/ivan/x_and_o_points/'
         # naming:
-        E_name = 'E'
-        B_name = 'B'
-        rho_name = 'rho'
-        V_name = 'rho_v'
-        Pd_name = 'PTensorDiagonal'
-        Pod_name = 'PTensorOffDiagonal'
+        E_name = 'fg_e'
+        B_name = 'vg_b_vol'
+        rho_name = 'proton/vg_rho'
+        V_name = 'proton/vg_v'
+        Pd_name = 'proton/vg_ptensor_diagonal'
+        Pod_name = 'proton/vg_ptensor_offdiagonal'
 
     name_list = [E_name, B_name, rho_name, V_name, Pd_name, Pod_name]
 
     for t in range(start_time, end_time + 1):
-        print('run', run_id, 't=', str(t))
+        print('run', run_id, 't =', str(t))
 
         # Loading x points
-        # x_loc_file = f'{args.x_dir}/{run_id}_x_points_{t}.txt'
         x_loc_file = x_dir + 'x_point_location_' + str(t) + '.txt'
         labeling_x, labeling_z = features.get_x_points(x_loc_file, boxre)
-        
 
         # read simulation data
         file_name = bulk_path + 'bulk.' + str(t).zfill(7) + '.vlsv'        
@@ -106,7 +95,7 @@ for run in runs:
             E = features.get_var(file_name, boxre, E_name, grid_flag='fg')
 
         E_mag = np.linalg.norm(E, axis=-1)
-        Ex, Ey, Ez = B[:, :, 0], E[:, :, 1], E[:, :, 2]
+        Ex, Ey, Ez = E[:, :, 0], E[:, :, 1], E[:, :, 2]
 
         rho = features.get_var(file_name, boxre, rho_name, grid_flag='vg')
         earth_mask = rho == 0
