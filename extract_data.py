@@ -5,8 +5,6 @@ from utils import resize
 import features
 import numpy as np
 
-boxre = [xmin, xmax, zmin, zmax]
-
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument('-o', '--outdir', type=str)
