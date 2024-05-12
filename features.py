@@ -5,6 +5,7 @@ from utils import wrap
 from constants import RE
 from scipy.interpolate import RegularGridInterpolator
 
+RE = 6371000
 
 def get_var(file_name, boxre, var_name, grid_flag):    
     
