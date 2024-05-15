@@ -28,8 +28,7 @@ def get_var(file_name, boxre, var_name, grid_flag):
     z_ind_top = int(abs((extents[2] - zlim_top) / cellsize))
 
     if grid_flag == 'fg':
-        var = f.read_fsgrid_variable(var_name)
-        print(var.shape)        
+        var = f.read_fsgrid_variable(var_name)            
         var = var[x_ind_left:x_ind_right,z_ind_bottom:z_ind_top,:]
         var = np.swapaxes(var,0,1)
 
