@@ -1,4 +1,3 @@
-
 runs = [
     {
         "id": "BGD",
@@ -20,8 +19,7 @@ runs = [
         "t_min": 230,
         "t_max": 477,
     }
-
-    ]
+   ]
 
 Re = 6371000  # Earth's radius
 

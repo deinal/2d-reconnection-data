@@ -29,7 +29,9 @@ def get_var(file_name, boxre, var_name, grid_flag):
 
     if grid_flag == 'fg':
         var = f.read_fsgrid_variable(var_name)
-        var = var[z_ind_bottom:z_ind_top, x_ind_left:x_ind_right, :]
+        print(var.shape)        
+        var = var[x_ind_left:x_ind_right,z_ind_bottom:z_ind_top,:]
+        var = np.swapaxes(var,0,1)
 
     elif grid_flag == 'vg':        
         cellids = f.read_variable("CellID")
